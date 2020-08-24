@@ -18,7 +18,7 @@ const (
 	notFoundPngquant = "not found Pngquant install in path"
 )
 
-func Compress(input image.Image, speed string) (output image.Image, err error) {
+func Compress(input image.Image, speed string) (output[]byte, err error) {
 	if err = speedCheck(speed); err != nil {
 		return
 	}
@@ -30,12 +30,10 @@ func Compress(input image.Image, speed string) (output image.Image, err error) {
 	}
 
 	b := w.Bytes()
-	compressed, err := CompressBytes(b, speed)
+	output, err = CompressBytes(b, speed)
 	if err != nil {
 		return
 	}
-
-	output, err = png.Decode(bytes.NewReader(compressed))
 	return
 }
 
