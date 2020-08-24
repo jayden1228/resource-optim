@@ -29,6 +29,7 @@ var rootCmd = &cobra.Command{
 func OptimCmd(_ *cobra.Command, args []string) {
 	if err := env.CheckToolRequired(); err != nil {
 		logger.LogE(err)
+		return
 	}
 	inputRootPath, err := prompt("input dir", "input dir cannot be empty")
 	if err != nil {

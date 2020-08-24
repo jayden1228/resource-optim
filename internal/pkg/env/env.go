@@ -14,7 +14,7 @@ const (
 	ffmpegCmd = "ffmpeg"
 	pngquantCmd = "pngquant"
 	ffmpegNotExist   = "ffmpeg tool for video and audio reduce is not found, please download and install from  https://ffmpeg.org/"
-	pngquantNotExist = "pngyu tool for image reduce is not found, please download and install from https://nukesaq88.github.io/Pngyu/"
+	pngquantNotExist = "pngyu tool for image reduce is not found, please download and install from https://nukesaq88.github.io/Pngyu"
 )
 
 func CheckToolRequired() error {
