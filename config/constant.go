@@ -1,5 +1,4 @@
 package config
 
-const (
-	PngquantPath = "/Applications/Pngyu.app/Contents/Resources/pngquant"
-)
+var PngquantPath string = "/Applications/Pngyu.app/Contents/Resources/pngquant"
+
