@@ -5,12 +5,10 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"resource-optim/internal/pkg/audio"
 	"resource-optim/internal/pkg/env"
-	"resource-optim/internal/pkg/image"
 	"resource-optim/internal/pkg/logger"
+	"resource-optim/internal/pkg/optim"
 	"resource-optim/internal/pkg/path"
-	"resource-optim/internal/pkg/video"
 	"strings"
 
 	"resource-optim/config"
@@ -44,6 +42,8 @@ func OptimCmd(_ *cobra.Command, args []string) {
 		return
 	}
 
+	optimType, err := promptOptimType(optim.GetOptimTypes())
+
 	trans := new(transcoder.Transcoder)
 
 	inputRootPath = path.HandleHomedirOrPwd(inputRootPath)
@@ -57,7 +57,7 @@ func OptimCmd(_ *cobra.Command, args []string) {
 		outputRootPath = gfile.Join(gfile.Dir(inputRootPath), defaultOutputDir)
 	}
 
-	err = BatchOptim(trans, inputRootPath, outputRootPath)
+	err = BatchOptim(trans, inputRootPath, outputRootPath, optimType)
 	if err != nil {
 		logger.LogE(err.Error())
 		return
@@ -80,14 +80,9 @@ func init() {
 const (
 	emptyPath        = ""
 	defaultOutputDir = "output"
-	mp4Suffix        = ".mp4"
-	mp3Suffix        = ".mp3"
-	pngSuffix        = ".png"
-	jpgSuffix        = ".jpg"
-	jpegSuffix       = ".jpeg"
 )
 
-func BatchOptim(trans *transcoder.Transcoder, inputRootPath, outputRootPath string) error {
+func BatchOptim(trans *transcoder.Transcoder, inputRootPath, outputRootPath, optimType string) error {
 	err := filepath.Walk(inputRootPath, func(fPath string, info os.FileInfo, err error) error {
 		if err != nil {
 			fmt.Printf("prevent panic by handling failure accessing a path %q: %v\n", fPath, err)
@@ -106,17 +101,8 @@ func BatchOptim(trans *transcoder.Transcoder, inputRootPath, outputRootPath stri
 			}
 		}
 
-		err = nil
-		// 根据文件后缀处理path
-		switch gfile.Ext(fPath) {
-		case mp4Suffix:
-			err = video.OptimVideoH264(trans, fPath, outPath)
-		case mp3Suffix:
-			err = audio.OptimAudio(trans, fPath, outPath)
-		case pngSuffix, jpegSuffix, jpgSuffix:
-			err = image.OptimImage(fPath, outPath)
-		}
-
+		// 根据选定文件方式处理
+		err = optim.TypeOptimMap[optimType](trans, fPath, outPath)
 		if err != nil {
 			return err
 		}
@@ -141,6 +127,18 @@ func promptDefault(label string, alert string, defaultValue string) (string, err
 		Default:  defaultValue,
 	}
 	return prompt.Run()
+}
+
+func promptOptimType(template []string) (string, error) {
+	prompt := promptui.Select{
+		Label: "select optim file type",
+		Items: template,
+	}
+	_, result, err := prompt.Run()
+	if err != nil {
+		return result, err
+	}
+	return result, nil
 }
 
 func emptyValidate(alert string) promptui.ValidateFunc {
